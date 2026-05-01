@@ -1,6 +1,6 @@
 [project]
 name = "kagi-session2api-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Kagi MCP server using session-based access (no official API required)"
 readme = "README.md"
 requires-python = ">=3.11"
