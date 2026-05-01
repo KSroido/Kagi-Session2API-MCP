@@ -1,6 +1,6 @@
 # Kagi Session2API MCP Server
 
-基于 Kagi Session Token 的 MCP（Model Context Protocol）服务器，无需官方付费 API 即可使用 Kagi 搜索和摘要功能。
+免费的 Kagi Search MCP（Model Context Protocol）服务器，基于 Session Token 认证，无需付费 API Key。支持 Claude Desktop、Cursor、Windsurf、Cline 及任何兼容 MCP 的 AI 编程助手。
 
 [English](README.md) | **[中文文档](README_ZH.md)**
 
@@ -10,7 +10,7 @@
 
 ## 特性
 
-- **Session 认证**：使用 Kagi session token 替代官方 API（$25/1000 次查询）
+- **Session 认证**：使用 Kagi session token 替代官方 API（$25/1000 次查询）——完全免费
 - **多 Token 池**：支持配置多个 token，轮询调度提高吞吐量
 - **单 Token 限速**：令牌桶算法，5 req/s/token
 - **输出兼容**：返回结果格式与官方 `kagimcp` 一致
@@ -18,6 +18,17 @@
 - **UA 伪装**：模拟 Firefox 浏览器进行 session 访问
 - **过期 Token 自动禁用**：检测到 401/403 或登录重定向时自动跳过
 - **搜索运算符**：支持 Kagi 运算符（`site:`、`lang:`、`filetype:` 等）
+
+## 兼容平台
+
+支持任何 MCP 兼容客户端：
+
+- [Claude Desktop](https://claude.ai/desktop)
+- [Cursor](https://cursor.sh)
+- [Windsurf](https://codeium.com/windsurf)
+- [Cline](https://cline.bot)
+- [Hermes Agent](https://github.com/nousresearch/hermes)
+- 任何支持 `stdio` 或 `HTTP` 传输的 MCP 客户端
 
 ## 快速安装（AI Agent 一键配置）
 

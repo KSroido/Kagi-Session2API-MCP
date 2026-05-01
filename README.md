@@ -1,6 +1,6 @@
 # Kagi Session2API MCP Server
 
-A Kagi Search MCP (Model Context Protocol) server that uses session token authentication instead of the official paid API.
+A free Kagi Search MCP (Model Context Protocol) server using session token authentication — no paid API key required. Works with Claude Desktop, Cursor, Windsurf, Cline, and any MCP-compatible AI coding assistant.
 
 **[English](README.md)** | [中文文档](README_ZH.md)
 
@@ -10,7 +10,7 @@ A Kagi Search MCP (Model Context Protocol) server that uses session token authen
 
 ## Features
 
-- **Session-based access**: Uses Kagi session tokens instead of the official API ($25/1000 queries)
+- **Session-based access**: Uses Kagi session tokens instead of the official API ($25/1000 queries) — completely free
 - **Multi-token pool**: Configure multiple tokens for higher throughput with round-robin rotation
 - **Per-token rate limiting**: 5 req/s per token with token bucket algorithm
 - **API-compatible output**: Returns results in the same format as the official `kagimcp`
@@ -18,6 +18,17 @@ A Kagi Search MCP (Model Context Protocol) server that uses session token authen
 - **Firefox UA spoofing**: Mimics a real Firefox browser for session-based access
 - **Auto-disable expired tokens**: Expired tokens are automatically detected and skipped
 - **Search operators**: Supports Kagi operators (`site:`, `lang:`, `filetype:`, etc.)
+
+## Compatible Platforms
+
+Works with any MCP-compatible client:
+
+- [Claude Desktop](https://claude.ai/desktop)
+- [Cursor](https://cursor.sh)
+- [Windsurf](https://codeium.com/windsurf)
+- [Cline](https://cline.bot)
+- [Hermes Agent](https://github.com/nousresearch/hermes)
+- Any MCP client supporting `stdio` or `HTTP` transport
 
 ## Quick Install (For AI Agents)
 
