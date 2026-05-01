@@ -20,7 +20,7 @@ from .exceptions import (
 )
 from .token_pool import TokenPool
 
-logger = logging.getLogger("kagi-session-mcp")
+logger = logging.getLogger("kagi-session2api-mcp")
 
 # Firefox browser headers for UA spoofing
 FIREFOX_HEADERS = {

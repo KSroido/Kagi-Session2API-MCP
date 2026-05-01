@@ -2,6 +2,8 @@
 
 A Kagi Search MCP (Model Context Protocol) server that uses session token authentication instead of the official paid API.
 
+> **⚠️ EndUser Warning**: This project uses Kagi session tokens to access search and summarizer features without the official paid API. This may violate [Kagi's Terms of Service](https://kagi.com/terms). Potential consequences include account suspension or permanent ban. **Use at your own risk.** The authors assume no liability for any account actions taken by Kagi.
+>
 > **⚠️ Security Warning**: Your Kagi session token provides full account access. Treat it like a password. Never share it or commit it to version control.
 
 ## Features
@@ -18,12 +20,12 @@ A Kagi Search MCP (Model Context Protocol) server that uses session token authen
 ## Installation
 
 ```bash
-pip install kagi-session-mcp
+pip install kagi-session2api-mcp
 ```
 
 Or with `uvx`:
 ```bash
-uvx kagi-session-mcp
+uvx kagi-session2api-mcp
 ```
 
 ## Configuration
@@ -35,7 +37,7 @@ uvx kagi-session-mcp
   "mcpServers": {
     "kagi-session": {
       "command": "uvx",
-      "args": ["kagi-session-mcp"],
+      "args": ["kagi-session2api-mcp"],
       "env": {
         "KAGI_SESSION_TOKEN": "YOUR_SESSION_TOKEN_HERE"
       }
@@ -51,7 +53,7 @@ uvx kagi-session-mcp
   "mcpServers": {
     "kagi-session": {
       "command": "uvx",
-      "args": ["kagi-session-mcp"],
+      "args": ["kagi-session2api-mcp"],
       "env": {
         "KAGI_SESSION_TOKENS": "TOKEN_1,TOKEN_2,TOKEN_3"
       }
@@ -62,7 +64,7 @@ uvx kagi-session-mcp
 
 ### Option 3: Config File (Recommended for Multi-Token)
 
-Create `~/.config/kagi-session-mcp/config.toml`:
+Create `~/.config/kagi-session2api-mcp/config.toml`:
 
 ```toml
 [kagi]
@@ -84,7 +86,7 @@ Then configure:
   "mcpServers": {
     "kagi-session": {
       "command": "uvx",
-      "args": ["kagi-session-mcp"],
+      "args": ["kagi-session2api-mcp"],
       "env": {
         "KAGI_SESSION_CONFIG": "/path/to/config.toml"
       }
@@ -140,12 +142,12 @@ Options:
 
 **Stdio** (default, for Claude Desktop):
 ```bash
-kagi-session-mcp
+kagi-session2api-mcp
 ```
 
 **HTTP** (for remote access):
 ```bash
-kagi-session-mcp --http --host 0.0.0.0 --port 8000
+kagi-session2api-mcp --http --host 0.0.0.0 --port 8000
 ```
 
 ## Architecture
@@ -170,7 +172,7 @@ When a token expires (detected via 401/403 or redirect to login), it is automati
 
 ## Differences from Official `kagimcp`
 
-| Aspect | Official `kagimcp` | `kagi-session-mcp` |
+| Aspect | Official `kagimcp` | `kagi-session2api-mcp` |
 |--------|-------------------|-------------------|
 | Authentication | API key ($25/1000) | Session token (free) |
 | Search endpoint | `/api/v0/search` | `/html/search` (HTML scraping) |
@@ -183,8 +185,9 @@ When a token expires (detected via 401/403 or redirect to login), it is automati
 
 - Kagi may change their HTML structure, breaking the parser
 - Session-based access may violate Kagi's Terms of Service
-- Account suspension is possible
+- Account suspension or permanent ban is possible
 - The summarizer endpoint is internal and may change without notice
+- **Use at your own risk.** The authors assume no liability for any consequences, including but not limited to account actions taken by Kagi.
 
 ## License
 

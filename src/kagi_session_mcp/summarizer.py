@@ -9,7 +9,7 @@ import logging
 from .client import KagiSessionClient
 from .exceptions import KagiSessionError
 
-logger = logging.getLogger("kagi-session-mcp")
+logger = logging.getLogger("kagi-session2api-mcp")
 
 # Valid summarizer engines
 VALID_ENGINES = {"cecil", "agnes", "daphne", "muriel"}

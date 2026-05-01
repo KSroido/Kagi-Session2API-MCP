@@ -1,5 +1,5 @@
 [project]
-name = "kagi-session-mcp"
+name = "kagi-session2api-mcp"
 version = "0.1.0"
 description = "Kagi MCP server using session-based access (no official API required)"
 readme = "README.md"
@@ -19,6 +19,12 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Internet :: WWW/HTTP",
 ]
+[project.urls]
+Homepage = "https://github.com/KSroido/Kagi-Session2API-MCP"
+Repository = "https://github.com/KSroido/Kagi-Session2API-MCP"
+Issues = "https://github.com/KSroido/Kagi-Session2API-MCP/issues"
+Changelog = "https://github.com/KSroido/Kagi-Session2API-MCP/releases"
+
 dependencies = [
     "fastmcp>=2.0",
     "httpx>=0.27",
@@ -35,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-kagi-session-mcp = "kagi_session_mcp:main"
+kagi-session2api-mcp = "kagi_session_mcp:main"
 
 [build-system]
 requires = ["hatchling"]

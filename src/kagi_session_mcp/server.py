@@ -36,11 +36,11 @@ logging.basicConfig(
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
-logger = logging.getLogger("kagi-session-mcp")
+logger = logging.getLogger("kagi-session2api-mcp")
 
 # --- MCP Server ---
 mcp = FastMCP(
-    "kagi-session-mcp",
+    "kagi-session2api-mcp",
     instructions=(
         "Kagi Search MCP server using session-based access. "
         "Provides kagi_search_fetch for web search and kagi_summarizer "
@@ -203,7 +203,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Set log level
-    logging.getLogger("kagi-session-mcp").setLevel(args.log_level)
+    logging.getLogger("kagi-session2api-mcp").setLevel(args.log_level)
 
     # Load configuration
     try:

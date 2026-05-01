@@ -13,7 +13,7 @@ from pathlib import Path
 from .exceptions import ConfigError
 
 # Default config file location (XDG-compliant)
-_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "kagi-session-mcp"
+_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "kagi-session2api-mcp"
 _DEFAULT_CONFIG_PATH = _DEFAULT_CONFIG_DIR / "config.toml"
 
 
@@ -40,7 +40,7 @@ def _find_config_path() -> Path | None:
     """Find config file using search order.
 
     1. KAGI_SESSION_CONFIG env var (explicit path)
-    2. ~/.config/kagi-session-mcp/config.toml (XDG-compliant)
+    2. ~/.config/kagi-session2api-mcp/config.toml (XDG-compliant)
     3. ./config.toml (current working directory, for development)
     """
     # Check explicit env var first
@@ -68,7 +68,7 @@ def _check_config_permissions(path: Path) -> None:
         mode = path.stat().st_mode
         if mode & stat.S_IRGRP or mode & stat.S_IROTH:
             import logging
-            logger = logging.getLogger("kagi-session-mcp")
+            logger = logging.getLogger("kagi-session2api-mcp")
             logger.warning(
                 f"Config file {path} is readable by group/others. "
                 f"Consider running: chmod 600 {path}"

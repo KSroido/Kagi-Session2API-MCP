@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup, Tag
 
 from .exceptions import ParseError
 
-logger = logging.getLogger("kagi-session-mcp")
+logger = logging.getLogger("kagi-session2api-mcp")
 
 _PARSER_VERSION = "0.1.0"
 

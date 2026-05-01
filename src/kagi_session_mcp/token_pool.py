@@ -10,7 +10,7 @@ import time
 
 from .exceptions import RateLimitError, TokenExpiredError
 
-logger = logging.getLogger("kagi-session-mcp")
+logger = logging.getLogger("kagi-session2api-mcp")
 
 
 class TokenBucket:
