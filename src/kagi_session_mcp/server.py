@@ -6,6 +6,7 @@ instead of the official API.
 """
 
 import argparse
+import asyncio
 import logging
 import time
 from typing import Literal
@@ -51,6 +52,32 @@ mcp = FastMCP(
 )
 
 
+async def _execute_single_query(
+    query: str, limit: int | None
+) -> tuple[str, "SearchResponse"]:
+    """Execute a single search query and return (query, response) tuple.
+
+    Runs the HTML fetch and parse pipeline with timing for elapsed_ms.
+
+    Args:
+        query: Search query string
+        limit: Maximum number of results to return, or None for all
+
+    Returns:
+        Tuple of (original query, SearchResponse)
+    """
+    start = time.monotonic()
+    html = await client.search_html(query)
+    elapsed_ms = int((time.monotonic() - start) * 1000)
+    response = parse_search_html(html, query, elapsed_ms)
+
+    # Apply limit if specified
+    if limit is not None and limit > 0:
+        response.data = response.data[:limit]
+
+    return (query, response)
+
+
 @mcp.tool()
 async def kagi_search_fetch(
     queries: list[str] = Field(
@@ -79,18 +106,13 @@ async def kagi_search_fetch(
     if client is None:
         raise RuntimeError("Server not initialized. Session client is missing.")
 
-    responses = []
-    for query in queries:
-        start = time.monotonic()
-        html = await client.search_html(query)
-        elapsed_ms = int((time.monotonic() - start) * 1000)
-        response = parse_search_html(html, query, elapsed_ms)
+    # Execute all queries concurrently using asyncio.gather for parallel I/O
+    query_response_pairs = await asyncio.gather(
+        *[_execute_single_query(query, limit) for query in queries]
+    )
 
-        # Apply limit if specified
-        if limit is not None and limit > 0:
-            response.data = response.data[:limit]
-
-        responses.append(response)
+    # Preserve original query ordering for consistent result numbering
+    responses = [response for _, response in query_response_pairs]
 
     return format_search_results(queries, responses)
 

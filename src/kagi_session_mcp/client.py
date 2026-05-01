@@ -2,6 +2,7 @@
 
 Provides KagiSessionClient that manages a pool of httpx.AsyncClient instances,
 one per session token, with Firefox UA spoofing and automatic token expiry detection.
+Uses HTTP/2 for improved connection performance.
 """
 
 import asyncio
@@ -81,6 +82,8 @@ class KagiSessionClient:
     cookie set. This avoids race conditions with cookie swapping on a shared client.
 
     Token rotation is handled by TokenPool (round-robin with per-token rate limiting).
+
+    HTTP/2 is enabled for improved connection multiplexing and performance.
     """
 
     def __init__(self, config: KagiConfig):
@@ -98,6 +101,7 @@ class KagiSessionClient:
 
         Each token gets its own client with the cookie pre-set.
         If the existing client is closed, create a new one.
+        HTTP/2 is enabled for improved performance.
         """
         if token_index not in self._clients or self._clients[token_index].is_closed:
             self._clients[token_index] = httpx.AsyncClient(
@@ -107,6 +111,7 @@ class KagiSessionClient:
                 timeout=self.config.timeout,
                 follow_redirects=True,
                 max_redirects=5,
+                http2=True,
             )
         return self._clients[token_index]
 

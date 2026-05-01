@@ -3,7 +3,7 @@
 Parses Kagi's server-rendered HTML from /html/search and converts it
 to API-compatible data structures matching the official Kagi API format.
 
-Uses BeautifulSoup + lxml for robust HTML parsing with multiple CSS
+Uses selectolax (Lexbor engine) for fast HTML parsing with multiple CSS
 selector fallback strategies for resilience against HTML structure changes.
 """
 
@@ -12,13 +12,13 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from bs4 import BeautifulSoup, Tag
+from selectolax.lexbor import LexborHTMLParser
 
 from .exceptions import ParseError
 
 logger = logging.getLogger("kagi-session2api-mcp")
 
-_PARSER_VERSION = "0.1.0"
+_PARSER_VERSION = "0.2.0"
 
 
 # --- Data Classes (API-compatible) ---
@@ -90,12 +90,12 @@ class SearchResponse:
 def _sanitize_text(text: str) -> str:
     """Clean HTML entities and whitespace from extracted text.
 
-    BeautifulSoup's .get_text() handles most entities, but this provides
+    selectolax's .text() handles most entities, but this provides
     a safety net for edge cases and normalizes whitespace.
     """
     if not text:
         return ""
-    # Handle any remaining HTML entities that BeautifulSoup might miss
+    # Handle any remaining HTML entities that the parser might miss
     text = html.unescape(text)
     # Normalize whitespace
     text = " ".join(text.split())
@@ -122,7 +122,7 @@ def parse_search_html(
         ParseError: If HTML parsing fails catastrophically
     """
     try:
-        soup = BeautifulSoup(html_content, "lxml")
+        tree = LexborHTMLParser(html_content)
     except Exception as e:
         raise ParseError(f"Failed to parse HTML: {e}")
 
@@ -131,7 +131,7 @@ def parse_search_html(
     # --- Primary search results ---
     # Try multiple selector strategies for resilience
     search_items = _select_elements(
-        soup,
+        tree,
         [
             ".search-result",          # Primary result class
             "._0_search-result",       # Prefixed variant
@@ -147,31 +147,31 @@ def parse_search_html(
             results.append(result)
 
     # --- Grouped results (sri-group) ---
-    for group in soup.select(".sri-group, ._0_sri-group"):
+    for group in tree.css(".sri-group, ._0_sri-group"):
         # Parse the main result from the group
         result = _parse_search_result(group)
         if result:
             results.append(result)
         # Also parse sub-results within the group
-        for sub in group.select(".sri-sub-result, ._0_sri-sub-result, .sub-result"):
+        for sub in group.css(".sri-sub-result, ._0_sri-sub-result, .sub-result"):
             sub_result = _parse_search_result(sub)
             if sub_result:
                 results.append(sub_result)
 
     # --- News results ---
-    for item in soup.select(".newsResultItem, ._0_newsResultItem, .news-result"):
+    for item in tree.css(".newsResultItem, ._0_newsResultItem, .news-result"):
         result = _parse_news_result(item)
         if result:
             results.append(result)
 
     # --- Video results ---
-    for item in soup.select(".videoResultItem, ._0_videoResultItem, .video-result"):
+    for item in tree.css(".videoResultItem, ._0_videoResultItem, .video-result"):
         result = _parse_video_result(item)
         if result:
             results.append(result)
 
     # --- Wikipedia / instant answer results ---
-    for item in soup.select(
+    for item in tree.css(
         ".wikipediaResult, ._0_wikipediaResult, .instant-answer, .infobox"
     ):
         result = _parse_wikipedia_result(item)
@@ -179,7 +179,7 @@ def parse_search_html(
             results.append(result)
 
     # --- Related searches ---
-    related = _extract_related_searches(soup)
+    related = _extract_related_searches(tree)
     if related and related.items:
         results.append(related)
 
@@ -205,43 +205,92 @@ def parse_search_html(
 # --- Selector Helpers ---
 
 
-def _select_elements(soup: BeautifulSoup, selectors: list[str]) -> list[Tag]:
+def _select_elements(tree: LexborHTMLParser, selectors: list[str]) -> list:
     """Try multiple CSS selectors and return results from the first one that matches.
 
     This provides resilience against HTML structure changes.
+
+    Args:
+        tree: LexborHTMLParser instance (parsed document)
+        selectors: List of CSS selectors to try in order
+
+    Returns:
+        List of matching nodes from the first selector that matches,
+        or an empty list if none match.
     """
     for selector in selectors:
-        elements = soup.select(selector)
+        elements = tree.css(selector)
         if elements:
             return elements
     return []
 
 
+def _css_first(item, selectors: list[str]):
+    """Try multiple CSS selectors and return the first match.
+
+    Args:
+        item: A selectolax node to search within
+        selectors: List of CSS selectors to try in order
+
+    Returns:
+        First matching node, or None if no selector matches.
+    """
+    for selector in selectors:
+        node = item.css_first(selector)
+        if node is not None:
+            return node
+    return None
+
+
+def _get_attr(node, attr: str, default: str = "") -> str:
+    """Safely get an attribute from a selectolax node.
+
+    Args:
+        node: A selectolax node
+        attr: Attribute name to retrieve
+        default: Default value if attribute is missing
+
+    Returns:
+        Attribute value or default
+    """
+    if node is None:
+        return default
+    return node.attributes.get(attr, default)
+
+
 # --- Individual Parsers ---
 
 
-def _parse_search_result(item: Tag) -> SearchResult | None:
-    """Parse a search result element into a SearchResult dataclass."""
+def _parse_search_result(item) -> SearchResult | None:
+    """Parse a search result element into a SearchResult dataclass.
+
+    Uses multiple CSS selector fallbacks for title, URL, and snippet
+    extraction. Includes a depth-first text scan as last resort for
+    snippet extraction when no known snippet element matches.
+    """
     # --- Title and URL ---
     # Try multiple selectors for the title link
-    title_el = (
-        item.select_one(".__sri_title_link")
-        or item.select_one("._0_sri_title_link")
-        or item.select_one("a._0_URL")
-        or item.select_one("a.__URL")
-        or item.select_one(".sri-title a")
-        or item.select_one("h3 a")
-        or item.select_one("a[href]")  # Last resort: any link
+    title_el = _css_first(
+        item,
+        [
+            ".__sri_title_link",
+            "._0_sri_title_link",
+            "a._0_URL",
+            "a.__URL",
+            ".sri-title a",
+            "h3 a",
+            "a[href]",  # Last resort: any link
+        ],
     )
 
     if not title_el:
         return None
 
     # Extract URL
-    url = title_el.get("href", "")
+    url = _get_attr(title_el, "href", "")
     if not url or url.startswith("#"):
         # Try data-og-url as fallback
-        url = item.get("data-og-url", "") or item.get("data-url", "")
+        url = _get_attr(item, "data-og-url", "") or _get_attr(item, "data-url", "")
 
     if not url:
         return None
@@ -251,21 +300,38 @@ def _parse_search_result(item: Tag) -> SearchResult | None:
         url = f"https://kagi.com{url}"
 
     # Extract title
-    title = _sanitize_text(title_el.get_text())
+    title = _sanitize_text(title_el.text())
 
     if not title:
         return None
 
     # --- Snippet / description ---
-    snippet_el = (
-        item.select_one(".sri-desc")
-        or item.select_one("._0_sri-desc")
-        or item.select_one(".sri-snippet")
-        or item.select_one("._0_sri-snippet")
-        or item.select_one(".snippet")
-        or item.select_one("p")  # Fallback: first paragraph
+    # Extended selector list with additional Kagi patterns for better extraction
+    snippet_el = _css_first(
+        item,
+        [
+            ".sri-desc",
+            "._0_sri-desc",
+            ".sri-snippet",
+            "._0_sri-snippet",
+            ".snippet",
+            ".sri-body",
+            "._0_sri-body",
+            ".sri-rich",
+            "._0_sri-rich",
+            "[class*='snippet']",
+            "[class*='desc']",
+            "[class*='body']",
+            "p",  # Fallback: first paragraph
+        ],
     )
-    snippet = _sanitize_text(snippet_el.get_text()) if snippet_el else None
+
+    if snippet_el is not None:
+        snippet = _sanitize_text(snippet_el.text())
+    else:
+        # Depth-first text scan: extract the longest <p> or <div> text block
+        # from the result item, excluding the title element
+        snippet = _extract_longest_text_block(item, exclude_el=title_el)
 
     # --- Published date ---
     published = _extract_published_date(item)
@@ -282,20 +348,23 @@ def _parse_search_result(item: Tag) -> SearchResult | None:
     )
 
 
-def _parse_news_result(item: Tag) -> SearchResult | None:
+def _parse_news_result(item) -> SearchResult | None:
     """Parse a news result element."""
-    title_el = (
-        item.select_one("a.news-title")
-        or item.select_one(".news-title a")
-        or item.select_one("h3 a")
-        or item.select_one("a[href]")
+    title_el = _css_first(
+        item,
+        [
+            "a.news-title",
+            ".news-title a",
+            "h3 a",
+            "a[href]",
+        ],
     )
 
     if not title_el:
         return None
 
-    url = title_el.get("href", "")
-    title = _sanitize_text(title_el.get_text())
+    url = _get_attr(title_el, "href", "")
+    title = _sanitize_text(title_el.text())
 
     if not url or not title:
         return None
@@ -303,12 +372,23 @@ def _parse_news_result(item: Tag) -> SearchResult | None:
     if url.startswith("/"):
         url = f"https://kagi.com{url}"
 
-    snippet_el = (
-        item.select_one(".news-snippet")
-        or item.select_one(".snippet")
-        or item.select_one("p")
+    snippet_el = _css_first(
+        item,
+        [
+            ".news-snippet",
+            ".snippet",
+            ".sri-body",
+            "._0_sri-body",
+            "[class*='snippet']",
+            "[class*='desc']",
+            "p",
+        ],
     )
-    snippet = _sanitize_text(snippet_el.get_text()) if snippet_el else None
+
+    if snippet_el is not None:
+        snippet = _sanitize_text(snippet_el.text())
+    else:
+        snippet = _extract_longest_text_block(item, exclude_el=title_el)
 
     published = _extract_published_date(item)
     thumbnail = _extract_thumbnail(item)
@@ -322,20 +402,23 @@ def _parse_news_result(item: Tag) -> SearchResult | None:
     )
 
 
-def _parse_video_result(item: Tag) -> SearchResult | None:
+def _parse_video_result(item) -> SearchResult | None:
     """Parse a video result element."""
-    title_el = (
-        item.select_one("a.video-title")
-        or item.select_one(".video-title a")
-        or item.select_one("h3 a")
-        or item.select_one("a[href]")
+    title_el = _css_first(
+        item,
+        [
+            "a.video-title",
+            ".video-title a",
+            "h3 a",
+            "a[href]",
+        ],
     )
 
     if not title_el:
         return None
 
-    url = title_el.get("href", "")
-    title = _sanitize_text(title_el.get_text())
+    url = _get_attr(title_el, "href", "")
+    title = _sanitize_text(title_el.text())
 
     if not url or not title:
         return None
@@ -343,12 +426,23 @@ def _parse_video_result(item: Tag) -> SearchResult | None:
     if url.startswith("/"):
         url = f"https://kagi.com{url}"
 
-    snippet_el = (
-        item.select_one(".video-snippet")
-        or item.select_one(".snippet")
-        or item.select_one("p")
+    snippet_el = _css_first(
+        item,
+        [
+            ".video-snippet",
+            ".snippet",
+            ".sri-body",
+            "._0_sri-body",
+            "[class*='snippet']",
+            "[class*='desc']",
+            "p",
+        ],
     )
-    snippet = _sanitize_text(snippet_el.get_text()) if snippet_el else None
+
+    if snippet_el is not None:
+        snippet = _sanitize_text(snippet_el.text())
+    else:
+        snippet = _extract_longest_text_block(item, exclude_el=title_el)
 
     thumbnail = _extract_thumbnail(item)
 
@@ -361,22 +455,25 @@ def _parse_video_result(item: Tag) -> SearchResult | None:
     )
 
 
-def _parse_wikipedia_result(item: Tag) -> SearchResult | None:
+def _parse_wikipedia_result(item) -> SearchResult | None:
     """Parse a Wikipedia / instant answer result element."""
     # Wikipedia results often have a different structure
-    title_el = (
-        item.select_one(".wiki-title a")
-        or item.select_one(".instant-answer-title a")
-        or item.select_one("h2 a")
-        or item.select_one("h3 a")
-        or item.select_one("a[href]")
+    title_el = _css_first(
+        item,
+        [
+            ".wiki-title a",
+            ".instant-answer-title a",
+            "h2 a",
+            "h3 a",
+            "a[href]",
+        ],
     )
 
     if not title_el:
         return None
 
-    url = title_el.get("href", "")
-    title = _sanitize_text(title_el.get_text())
+    url = _get_attr(title_el, "href", "")
+    title = _sanitize_text(title_el.text())
 
     if not url or not title:
         return None
@@ -384,13 +481,24 @@ def _parse_wikipedia_result(item: Tag) -> SearchResult | None:
     if url.startswith("/"):
         url = f"https://kagi.com{url}"
 
-    snippet_el = (
-        item.select_one(".wiki-extract")
-        or item.select_one(".wiki-desc")
-        or item.select_one(".instant-answer-snippet")
-        or item.select_one("p")
+    snippet_el = _css_first(
+        item,
+        [
+            ".wiki-extract",
+            ".wiki-desc",
+            ".instant-answer-snippet",
+            ".sri-body",
+            "._0_sri-body",
+            "[class*='snippet']",
+            "[class*='desc']",
+            "p",
+        ],
     )
-    snippet = _sanitize_text(snippet_el.get_text()) if snippet_el else None
+
+    if snippet_el is not None:
+        snippet = _sanitize_text(snippet_el.text())
+    else:
+        snippet = _extract_longest_text_block(item, exclude_el=title_el)
 
     thumbnail = _extract_thumbnail(item)
 
@@ -403,43 +511,88 @@ def _parse_wikipedia_result(item: Tag) -> SearchResult | None:
     )
 
 
-def _extract_published_date(item: Tag) -> str | None:
+def _extract_longest_text_block(item, exclude_el=None) -> str | None:
+    """Depth-first scan for the longest <p> or <div> text block.
+
+    Used as a last-resort fallback when no known snippet element matches.
+    Skips the excluded element (typically the title link) to avoid
+    duplicating the title as the snippet.
+
+    Args:
+        item: The selectolax result node to scan
+        exclude_el: A node to exclude from text extraction (e.g., title element)
+
+    Returns:
+        Sanitized text of the longest text block found, or None
+    """
+    longest_text = ""
+    exclude_html = ""
+    if exclude_el is not None:
+        try:
+            exclude_html = exclude_el.html
+        except Exception:
+            pass  # If we can't get the HTML, don't exclude anything
+
+    for tag_name in ("p", "div"):
+        for node in item.css(tag_name):
+            # Skip the excluded element (title) by comparing HTML content
+            if exclude_html:
+                try:
+                    if node.html == exclude_html:
+                        continue
+                except Exception:
+                    pass
+
+            text = _sanitize_text(node.text())
+            if len(text) > len(longest_text):
+                longest_text = text
+
+    return longest_text if longest_text else None
+
+
+def _extract_published_date(item) -> str | None:
     """Extract published date from a result element."""
     # Try multiple selectors for date
-    date_el = (
-        item.select_one(".sri-date")
-        or item.select_one("._0_sri-date")
-        or item.select_one(".news-date")
-        or item.select_one(".date")
-        or item.select_one("time")
+    date_el = _css_first(
+        item,
+        [
+            ".sri-date",
+            "._0_sri-date",
+            ".news-date",
+            ".date",
+            "time",
+        ],
     )
     if date_el:
-        date_text = _sanitize_text(date_el.get_text())
+        date_text = _sanitize_text(date_el.text())
         if date_text:
             return date_text
 
     # Try datetime attribute on time element
-    time_el = item.select_one("time[datetime]")
+    time_el = item.css_first("time[datetime]")
     if time_el:
-        dt = time_el.get("datetime", "")
+        dt = _get_attr(time_el, "datetime", "")
         if dt:
             return str(dt)
 
     return None
 
 
-def _extract_thumbnail(item: Tag) -> dict | None:
+def _extract_thumbnail(item) -> dict | None:
     """Extract thumbnail information from a result element."""
-    img_el = (
-        item.select_one(".sri-thumbnail img")
-        or item.select_one("._0_sri-thumbnail img")
-        or item.select_one(".thumbnail img")
-        or item.select_one("img[src]")
+    img_el = _css_first(
+        item,
+        [
+            ".sri-thumbnail img",
+            "._0_sri-thumbnail img",
+            ".thumbnail img",
+            "img[src]",
+        ],
     )
     if not img_el:
         return None
 
-    src = img_el.get("src", "")
+    src = _get_attr(img_el, "src", "")
     if not src or src.startswith("data:"):
         return None
 
@@ -450,42 +603,50 @@ def _extract_thumbnail(item: Tag) -> dict | None:
     return {"src": src}
 
 
-def _extract_related_searches(soup: BeautifulSoup) -> RelatedSearches | None:
+def _extract_related_searches(tree: LexborHTMLParser) -> RelatedSearches | None:
     """Extract related search suggestions."""
     terms: list[str] = []
 
     # Strategy 1: Explicit related searches container
-    related_el = soup.select_one(
-        ".related-searches, ._0_related-searches, .related-searches-box"
+    related_el = _css_first(
+        tree,
+        [
+            ".related-searches",
+            "._0_related-searches",
+            ".related-searches-box",
+        ],
     )
     if related_el:
-        for a in related_el.select("a"):
-            text = _sanitize_text(a.get_text())
+        for a in related_el.css("a"):
+            text = _sanitize_text(a.text())
             if text:
                 terms.append(text)
         if terms:
             return RelatedSearches(items=terms)
 
     # Strategy 2: Look for "Related searches" / "People also search for" section
-    for heading in soup.select("h2, h3, .section-title"):
-        heading_text = heading.get_text(strip=True).lower()
+    for heading in tree.css("h2, h3, .section-title"):
+        heading_text = heading.text(strip=True).lower()
         if any(
             keyword in heading_text
             for keyword in ["related", "also search", "related search"]
         ):
-            # Find links in the sibling container
-            parent = heading.find_parent()
+            # Find links in the parent container
+            try:
+                parent = heading.parent
+            except Exception:
+                parent = None
             if parent:
-                for a in parent.select("a"):
-                    text = _sanitize_text(a.get_text())
+                for a in parent.css("a"):
+                    text = _sanitize_text(a.text())
                     if text and text not in terms:
                         terms.append(text)
             if terms:
                 return RelatedSearches(items=terms)
 
     # Strategy 3: Look for common related search patterns in list items
-    for el in soup.select(".related-terms a, .related-links a"):
-        text = _sanitize_text(el.get_text())
+    for el in tree.css(".related-terms a, .related-links a"):
+        text = _sanitize_text(el.text())
         if text:
             terms.append(text)
 
