@@ -1,6 +1,8 @@
-# Kagi Session MCP Server
+# Kagi Session2API MCP Server
 
 A Kagi Search MCP (Model Context Protocol) server that uses session token authentication instead of the official paid API.
+
+**[English](README.md)** | [中文文档](README_ZH.md)
 
 > **⚠️ EndUser Warning**: This project uses Kagi session tokens to access search and summarizer features without the official paid API. This may violate [Kagi's Terms of Service](https://kagi.com/terms). Potential consequences include account suspension or permanent ban. **Use at your own risk.** The authors assume no liability for any account actions taken by Kagi.
 >
