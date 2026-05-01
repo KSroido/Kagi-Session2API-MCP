@@ -1,6 +1,6 @@
 # Kagi Session2API MCP Server
 
-A free Kagi Search MCP (Model Context Protocol) server using session token authentication — no paid API key required. Works with Claude Desktop, Cursor, Windsurf, Cline, and any MCP-compatible AI coding assistant.
+A free Kagi Search MCP (Model Context Protocol) server using session token authentication — no paid API key required. Works with Claude Desktop, Cursor, Windsurf, Cline, and any MCP-compatible AI coding assistant/agent.
 
 **[English](README.md)** | [中文文档](README_ZH.md)
 
@@ -36,8 +36,9 @@ Just paste this prompt to your AI agent:
 
 ```
 Install the Kagi Session2API MCP server from https://pypi.org/project/kagi-session2api-mcp/.
-Then add it to my MCP config with: command "uvx", args ["kagi-session2api-mcp"],
-and set env KAGI_SESSION_TOKEN to my token (ask me if you don't have it).
+Then add it to my MCP:
+`uvx kagi-session2api-mcp`
+set env KAGI_SESSION_TOKEN to my token (ask me if you don't have it).
 If I have multiple tokens, use KAGI_SESSION_TOKENS (comma-separated) instead,
 or create a config file at ~/.config/kagi-session2api-mcp/config.toml with:
 [kagi]

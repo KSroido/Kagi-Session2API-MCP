@@ -1,12 +1,12 @@
 # Kagi Session2API MCP Server
 
-免费的 Kagi Search MCP（Model Context Protocol）服务器，基于 Session Token 认证，无需付费 API Key。支持 Claude Desktop、Cursor、Windsurf、Cline 及任何兼容 MCP 的 AI 编程助手。
+Kagi Search MCP（Model Context Protocol），基于网页版本 Session Token 认证，无需付费 API Key。支持 Claude Desktop、Cursor、Windsurf、Cline 及任何兼容 MCP 的 AI agent。
 
 [English](README.md) | **[中文文档](README_ZH.md)**
 
-> **⚠️ 用户警告**：本项目通过 Kagi session token 访问搜索和摘要功能，绕过官方付费 API。这可能违反 [Kagi 服务条款](https://kagi.com/terms)，潜在后果包括账号暂停或永久封禁。**风险自负。** 作者不对 Kagi 采取的任何账号措施承担责任。
+> **⚠️ 用户警告**：本项目通过 Kagi session token 访问搜索和摘要功能，绕过官方付费 API。这可能违反 [Kagi 服务条款](https://kagi.com/terms)，潜在后果包括账号暂停或永久封禁。**风险自负。** 作者不对 Kagi 采取的任何相关措施承担责任。
 >
-> **⚠️ 安全警告**：Kagi session token 等同于账号完整权限。请像对待密码一样保管，切勿泄露或提交至版本控制。
+> **⚠️ 安全警告**：Kagi session token 等同于账号完整权限。请像对待密码一样保管，切勿泄露或提交至版本控制仓库。
 
 ## 特性
 
@@ -35,18 +35,19 @@
 将以下 prompt 粘贴给你的 AI agent 即可：
 
 ```
-从 https://pypi.org/project/kagi-session2api-mcp/ 安装 Kagi Session2API MCP 服务器，
-然后添加到我的 MCP 配置中：command 为 "uvx"，args 为 ["kagi-session2api-mcp"]，
-环境变量 KAGI_SESSION_TOKEN 设为我的 token（没有的话问我要）。
-如果有多个 token，改用 KAGI_SESSION_TOKENS（逗号分隔），
-或者创建配置文件 ~/.config/kagi-session2api-mcp/config.toml，内容如下：
+Install the Kagi Session2API MCP server from https://pypi.org/project/kagi-session2api-mcp/.
+Then add it to my MCP:
+`uvx kagi-session2api-mcp`
+set env KAGI_SESSION_TOKEN to my token (ask me if you don't have it).
+If I have multiple tokens, use KAGI_SESSION_TOKENS (comma-separated) instead,
+or create a config file at ~/.config/kagi-session2api-mcp/config.toml with:
 [kagi]
 session_tokens = ["TOKEN_1", "TOKEN_2"]
 summarizer_engine = "cecil"
 [client]
 timeout = 30
 max_retries = 2
-然后设置环境变量 KAGI_SESSION_CONFIG 指向该文件路径。
+and set env KAGI_SESSION_CONFIG to that path.
 ```
 
 ## 手动安装
