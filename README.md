@@ -19,7 +19,26 @@ A Kagi Search MCP (Model Context Protocol) server that uses session token authen
 - **Auto-disable expired tokens**: Expired tokens are automatically detected and skipped
 - **Search operators**: Supports Kagi operators (`site:`, `lang:`, `filetype:`, etc.)
 
-## Installation
+## Quick Install (For AI Agents)
+
+Just paste this prompt to your AI agent:
+
+```
+Install the Kagi Session2API MCP server from https://pypi.org/project/kagi-session2api-mcp/.
+Then add it to my MCP config with: command "uvx", args ["kagi-session2api-mcp"],
+and set env KAGI_SESSION_TOKEN to my token (ask me if you don't have it).
+If I have multiple tokens, use KAGI_SESSION_TOKENS (comma-separated) instead,
+or create a config file at ~/.config/kagi-session2api-mcp/config.toml with:
+[kagi]
+session_tokens = ["TOKEN_1", "TOKEN_2"]
+summarizer_engine = "cecil"
+[client]
+timeout = 30
+max_retries = 2
+and set env KAGI_SESSION_CONFIG to that path.
+```
+
+## Install Manually
 
 ```bash
 pip install kagi-session2api-mcp

@@ -19,7 +19,26 @@
 - **过期 Token 自动禁用**：检测到 401/403 或登录重定向时自动跳过
 - **搜索运算符**：支持 Kagi 运算符（`site:`、`lang:`、`filetype:` 等）
 
-## 安装
+## 快速安装（AI Agent 一键配置）
+
+将以下 prompt 粘贴给你的 AI agent 即可：
+
+```
+从 https://pypi.org/project/kagi-session2api-mcp/ 安装 Kagi Session2API MCP 服务器，
+然后添加到我的 MCP 配置中：command 为 "uvx"，args 为 ["kagi-session2api-mcp"]，
+环境变量 KAGI_SESSION_TOKEN 设为我的 token（没有的话问我要）。
+如果有多个 token，改用 KAGI_SESSION_TOKENS（逗号分隔），
+或者创建配置文件 ~/.config/kagi-session2api-mcp/config.toml，内容如下：
+[kagi]
+session_tokens = ["TOKEN_1", "TOKEN_2"]
+summarizer_engine = "cecil"
+[client]
+timeout = 30
+max_retries = 2
+然后设置环境变量 KAGI_SESSION_CONFIG 指向该文件路径。
+```
+
+## 手动安装
 
 ```bash
 pip install kagi-session2api-mcp
