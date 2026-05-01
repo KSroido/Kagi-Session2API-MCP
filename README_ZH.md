@@ -1,6 +1,6 @@
 # Kagi Session2API MCP Server
 
-免费的 Kagi Search MCP 服务器——通过 Session Token 访问 Kagi 搜索和摘要，无需 API Key。支持 Claude Desktop、Cursor、Windsurf、Cline 及任何兼容 MCP 的 AI 编程助手/Agent。
+免费的 Kagi Search MCP 服务器——通过 Session Token 访问 Kagi 搜索和摘要，无需 API Key。支持 Claude Desktop、Cursor、Windsurf、Cline、Hermes 及任何兼容 MCP 的 AI 编程助手/Agent。
 
 [English](README.md) | **[中文文档](README_ZH.md)**
 

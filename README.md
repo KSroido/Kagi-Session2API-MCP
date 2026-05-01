@@ -1,6 +1,6 @@
 # Kagi Session2API MCP Server
 
-A free Kagi Search MCP (Model Context Protocol) server — access Kagi search and summarizer via session tokens, no API key needed. Works with Claude Desktop, Cursor, Windsurf, Cline, and any MCP-compatible AI coding assistant/agent.
+A free Kagi Search MCP (Model Context Protocol) server — access Kagi search and summarizer via session tokens, no API key needed. Works with Claude Desktop, Cursor, Windsurf, Cline, Hermes and any MCP-compatible AI coding assistant/agent.
 
 **[English](README.md)** | [中文文档](README_ZH.md)
 
