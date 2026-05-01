@@ -307,9 +307,13 @@ def _parse_search_result(item) -> SearchResult | None:
 
     # --- Snippet / description ---
     # Extended selector list with additional Kagi patterns for better extraction
+    # Priority: double-underscore and _0_ prefixed variants first (current Kagi HTML)
     snippet_el = _css_first(
         item,
         [
+            ".__sri-desc",
+            "._0_DESC",
+            ".__sri-body",
             ".sri-desc",
             "._0_sri-desc",
             ".sri-snippet",
@@ -375,6 +379,9 @@ def _parse_news_result(item) -> SearchResult | None:
     snippet_el = _css_first(
         item,
         [
+            ".__sri-desc",
+            "._0_DESC",
+            ".__sri-body",
             ".news-snippet",
             ".snippet",
             ".sri-body",
@@ -429,6 +436,9 @@ def _parse_video_result(item) -> SearchResult | None:
     snippet_el = _css_first(
         item,
         [
+            ".__sri-desc",
+            "._0_DESC",
+            ".__sri-body",
             ".video-snippet",
             ".snippet",
             ".sri-body",
@@ -484,6 +494,9 @@ def _parse_wikipedia_result(item) -> SearchResult | None:
     snippet_el = _css_first(
         item,
         [
+            ".__sri-desc",
+            "._0_DESC",
+            ".__sri-body",
             ".wiki-extract",
             ".wiki-desc",
             ".instant-answer-snippet",
