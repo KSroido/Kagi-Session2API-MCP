@@ -57,7 +57,7 @@ class TestRelatedSearchesToDict:
     """Tests for RelatedSearches serialization."""
 
     def test_basic(self):
-        related = RelatedSearches(list=["term1", "term2", "term3"])
+        related = RelatedSearches(items=["term1", "term2", "term3"])
         d = related.to_dict()
         assert d["t"] == 1
         assert d["list"] == ["term1", "term2", "term3"]
@@ -78,7 +78,7 @@ class TestSearchResponseToDict:
             meta={"id": "test-123", "node": "session", "ms": 100, "api_balance": None},
             data=[
                 SearchResult(url="https://a.com", title="A"),
-                RelatedSearches(list=["x", "y"]),
+                RelatedSearches(items=["x", "y"]),
             ],
         )
         d = response.to_dict()
@@ -172,7 +172,7 @@ class TestParseSearchHtml:
         response = parse_search_html(html, "test")
         related = [r for r in response.data if isinstance(r, RelatedSearches)]
         if related:
-            assert "term1" in related[0].list
+            assert "term1" in related[0].items
 
     def test_meta_fields(self):
         """Meta fields should be set correctly."""

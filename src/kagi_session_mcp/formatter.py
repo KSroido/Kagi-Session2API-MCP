@@ -87,11 +87,11 @@ def _format_search_result(result: SearchResult, number: int) -> str:
 
 def _format_related_searches(related: RelatedSearches) -> str:
     """Format related searches section."""
-    if not related.list:
+    if not related.items:
         return ""
 
     lines = ["**Related searches:**"]
-    lines.append(", ".join(related.list))
+    lines.append(", ".join(related.items))
     lines.append("")
 
     return "\n".join(lines)

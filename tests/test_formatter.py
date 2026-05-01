@@ -48,14 +48,14 @@ class TestFormatRelatedSearches:
     """Tests for related searches formatting."""
 
     def test_basic(self):
-        related = RelatedSearches(list=["term1", "term2", "term3"])
+        related = RelatedSearches(items=["term1", "term2", "term3"])
         text = _format_related_searches(related)
         assert "Related searches" in text
         assert "term1" in text
         assert "term2" in text
 
     def test_empty(self):
-        related = RelatedSearches(list=[])
+        related = RelatedSearches(items=[])
         text = _format_related_searches(related)
         assert text == ""
 

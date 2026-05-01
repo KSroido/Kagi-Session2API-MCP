@@ -52,10 +52,10 @@ class RelatedSearches:
     """API-compatible related searches (t=1)."""
 
     t: int = 1
-    list: list[str] = field(default_factory=list)
+    items: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"t": self.t, "list": self.list}
+        return {"t": self.t, "list": self.items}
 
 
 @dataclass
@@ -180,7 +180,7 @@ def parse_search_html(
 
     # --- Related searches ---
     related = _extract_related_searches(soup)
-    if related and related.list:
+    if related and related.items:
         results.append(related)
 
     # --- Warning if no results found ---
@@ -464,7 +464,7 @@ def _extract_related_searches(soup: BeautifulSoup) -> RelatedSearches | None:
             if text:
                 terms.append(text)
         if terms:
-            return RelatedSearches(list=terms)
+            return RelatedSearches(items=terms)
 
     # Strategy 2: Look for "Related searches" / "People also search for" section
     for heading in soup.select("h2, h3, .section-title"):
@@ -481,7 +481,7 @@ def _extract_related_searches(soup: BeautifulSoup) -> RelatedSearches | None:
                     if text and text not in terms:
                         terms.append(text)
             if terms:
-                return RelatedSearches(list=terms)
+                return RelatedSearches(items=terms)
 
     # Strategy 3: Look for common related search patterns in list items
     for el in soup.select(".related-terms a, .related-links a"):
@@ -489,4 +489,4 @@ def _extract_related_searches(soup: BeautifulSoup) -> RelatedSearches | None:
         if text:
             terms.append(text)
 
-    return RelatedSearches(list=terms) if terms else None
+    return RelatedSearches(items=terms) if terms else None
