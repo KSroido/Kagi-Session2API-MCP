@@ -1,14 +1,32 @@
+<div align="center">
+
 # Kagi Session2API MCP Server
 
-A free Kagi Search MCP (Model Context Protocol) server — access Kagi search and summarizer via session tokens, no API key needed. Works with Claude Desktop, Cursor, Windsurf, Cline, Hermes and any MCP-compatible AI coding assistant/agent.
+**Free Kagi Search MCP server — session tokens, no API key needed**
+
+[![PyPI version](https://img.shields.io/pypi/v/kagi-session2api-mcp.svg)](https://pypi.org/project/kagi-session2api-mcp/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/kagi-session2api-mcp.svg)](https://pypi.org/project/kagi-session2api-mcp/)
+[![GitHub stars](https://img.shields.io/github/stars/KSroido/Kagi-Session2API-MCP?style=social)](https://github.com/KSroido/Kagi-Session2API-MCP/stargazers)
+[![GitHub license](https://img.shields.io/github/license/KSroido/Kagi-Session2API-MCP)](LICENSE)
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python)](https://python.org/)
 
 **[English](README.md)** | [中文文档](README_ZH.md)
+
+</div>
+
+---
+
+> Access Kagi search and summarizer via session tokens — completely free. Works with Claude Desktop, Cursor, Windsurf, Cline, Hermes and any MCP-compatible AI coding assistant/agent.
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=KSroido/Kagi-Session2API-MCP&type=Date)](https://star-history.com/#KSroido/Kagi-Session2API-MCP&Date)
 
 > **⚠️ EndUser Warning**: This project uses Kagi session tokens to access search and summarizer features without the official paid API. This may violate [Kagi's Terms of Service](https://kagi.com/terms). Potential consequences include account suspension or permanent ban. **Use at your own risk.** The authors assume no liability for any account actions taken by Kagi.
 >
 > **⚠️ Security Warning**: Your Kagi session token provides full account access. Treat it like a password. Never share it or commit it to version control.
 
-## Features
+## 🌟 Features
 
 - **Session-based access**: Uses Kagi session tokens instead of the official API ($25/1000 queries) — completely free
 - **Multi-token pool**: Configure multiple tokens for higher throughput with round-robin rotation
