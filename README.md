@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ksroido-kagi-session2api-mcp-badge.png)](https://mseep.ai/app/ksroido-kagi-session2api-mcp)
+
 <div align="center">
 
 # Kagi Session2API MCP Server
